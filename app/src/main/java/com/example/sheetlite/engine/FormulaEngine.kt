@@ -145,6 +145,17 @@ object FormulaEngine {
             throw IllegalArgumentException("Invalid expression")
         }
 
+        val parser = ExpressionParser(tokens, rawMap, visited)
+        val result = parser.parseExpression()
+        if (parser.pos != tokens.size) throw IllegalArgumentException("Unexpected trailing tokens")
+        return result
+    }
+
+    private class ExpressionParser(
+        private val tokens: List<String>,
+        private val rawMap: Map<Pair<Int, Int>, String>,
+        private val visited: Set<Pair<Int, Int>>
+    ) {
         var pos = 0
 
         fun parseExpression(): Double {
@@ -157,7 +168,7 @@ object FormulaEngine {
             return left
         }
 
-        fun parseTerm(): Double {
+        private fun parseTerm(): Double {
             var left = parseFactor()
             while (pos < tokens.size && (tokens[pos] == "*" || tokens[pos] == "/")) {
                 val op = tokens[pos++]
@@ -172,7 +183,7 @@ object FormulaEngine {
             return left
         }
 
-        fun parseFactor(): Double {
+        private fun parseFactor(): Double {
             if (pos >= tokens.size) throw IllegalArgumentException("Unexpected end")
             val token = tokens[pos]
             if (token == "+") {
@@ -200,9 +211,5 @@ object FormulaEngine {
                 token.toDoubleOrNull() ?: throw IllegalArgumentException("Invalid token: $token")
             }
         }
-
-        val result = parseExpression()
-        if (pos != tokens.size) throw IllegalArgumentException("Unexpected trailing tokens")
-        return result
     }
 }
